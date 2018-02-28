@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.linalg import inv
 
 eps = 10 ** -8
 
@@ -22,6 +23,16 @@ def derivative(f, x, h=eps):
     return np.array(grad)
 
 
+def second_derivative(f, x, h=eps):
+    n = len(x)
+    hesse = [np.array([(f(x + (unit_vector(i, n) + unit_vector(j, n)) * h)
+                        - f(x + (unit_vector(i, n) - unit_vector(j, n)) * h)
+                        - f(x - (unit_vector(i, n) - unit_vector(j, n)) * h)
+                        + f(x - (unit_vector(i, n) + unit_vector(j, n)) * h))
+                       / (4. * h ** 2) for j in range(n)]) for i in range(n)]
+    return np.array(hesse)
+
+
 def minimize_one_dimension_golden_ratio(f, b=1/eps, a=-1/eps, eps=eps):
     F = (1. + 5 ** 0.5) / 2
     while abs(b - a) > eps:
@@ -42,7 +53,7 @@ def minimize_one_dimension_brute_force(f, b, a, n: int):
     return x_min
 
 
-def minimize_one_dimension(f, method):
+def minimize_one_dimension(f, method, eps=eps):
     if method == "golden_ratio":
         return minimize_one_dimension_golden_ratio(f, a=0)
     elif method == "brute_force":
@@ -56,9 +67,9 @@ def choose_step_fastest(f, x, h, method):
     return minimize_one_dimension(f_a, method)
 
 
-def choose_step_fragmentation(f, x, h, beta=1, λ=0.5):
+def choose_step_fragmentation(f, x, h, beta=1, λ=0.5, eps=eps):
     alpha = beta
-    while f(x + alpha * h) > f(x):
+    while f(x + alpha * h) - f(x) > eps * alpha * derivative(f, x, eps).dot(h):
         alpha *= λ
     return alpha
 
@@ -78,12 +89,12 @@ def norm(x):
 
 def minimize(f, x0, step_method, eps=eps):
     x = np.copy(x0)
-    h = -derivative(f, x, eps)
+    h = -inv(second_derivative(f, x, eps)).dot(derivative(f, x, eps))
     alpha = choose_step(f, x, h, step_method)
     x1 = x + alpha * h
     while norm(x1 - x) > eps:
         x = np.copy(x1)
-        h = -derivative(f, x)
+        h = -inv(second_derivative(f, x, eps)).dot(derivative(f, x, eps))
         alpha = choose_step(f, x, h, step_method)
         x1 = x + alpha * h
     return x1
@@ -93,3 +104,4 @@ x0 = np.array([0., 0.])
 print(minimize(func, x0, "fragmentation", eps))
 print(minimize(func, x0, "fastest_golden_ratio", eps))
 print(minimize(func, x0, "fastest_brute_force", eps))
+
