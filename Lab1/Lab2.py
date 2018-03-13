@@ -87,21 +87,32 @@ def norm(x):
     return sum([i ** 2 for i in x]) ** 0.5
 
 
-def minimize(f, x0, step_method, eps=eps):
+def minimize(f, x0, step_method, eps=eps, output=0):
+    i = 0
     x = np.copy(x0)
     h = -inv(second_derivative(f, x, eps)).dot(derivative(f, x, eps))
     alpha = choose_step(f, x, h, step_method)
+    print("x{0} = {1}\nα{0} = {2}\nf(x{0}) = {3}".format(i, x, alpha, f(x)))
     x1 = x + alpha * h
     while norm(x1 - x) > eps:
+        i += 1
         x = np.copy(x1)
         h = -inv(second_derivative(f, x, eps)).dot(derivative(f, x, eps))
         alpha = choose_step(f, x, h, step_method)
+        print("x{0} = {1}\nα{0} = {2}\nf(x{0}) = {3}".format(i, x, alpha, f(x))) if i <= output else None
         x1 = x + alpha * h
     return x1
 
 
 x0 = np.array([0., 0.])
-print(minimize(func, x0, "fragmentation", eps))
-print(minimize(func, x0, "fastest_golden_ratio", eps))
-print(minimize(func, x0, "fastest_brute_force", eps))
-
+output = 3
+print("* * *   Метод Ньютона   * * *\n")
+print("Метод дроблення кроку")
+min = minimize(func, x0, "fragmentation", eps, output)
+print("Розв'язок: ", min,"\nmin f = ",func(min))
+print("Метод найшвидшого спуску з використанням методу золотого перетину одновимірної оптимізації")
+min = minimize(func, x0, "fastest_golden_ratio", eps, output)
+print("Розв'язок: ", min,"\nmin f = ",func(min))
+print("Метод найшвидшого спуску з використанням методу перебору одновимірної оптимізації")
+min = minimize(func, x0, "fastest_brute_force", eps, output)
+print("Розв'язок: ", min,"\nmin f = ",func(min))
