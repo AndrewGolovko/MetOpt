@@ -4,13 +4,13 @@ eps = 10 ** -8
 
 
 def func(x):
-    a, b, c, d, e, f = 1., 4., 0.001, 0., -1., 0.
-    A = np.array([[a, c / 2],
-                  [c / 2, b]])
-    B = np.array([d, e])
-    C = f
-    return A.dot(x).dot(x) + B.dot(x) + C
-
+    # a, b, c, d, e, f = 1., 4., 0.001, 0., -1., 0.
+    # A = np.array([[a, c / 2],
+    #               [c / 2, b]])
+    # B = np.array([d, e])
+    # C = f
+    # return A.dot(x).dot(x) + B.dot(x) + C
+    return x[0]**3+x[1]+x[2]**3+x[3]+16*x[0]**2*x[1]+8*x[1]**2*x[2]+x[2]**2*x[3]+2
 
 def unit_vector(i, n):
     return np.array([0 if i != j else 1 for j in range(n)])
@@ -56,7 +56,7 @@ def choose_step_fastest(f, x, h, method):
     return minimize_one_dimension(f_a, method)
 
 
-def choose_step_fragmentation(f, x, h, beta=1, λ=0.5, eps=eps):
+def choose_step_fragmentation(f, x, h, beta=1, λ=0.5, eps=0.5):
     alpha = beta
     # while f(x + alpha * h) > f(x):
     while f(x + alpha * h) - f(x) > - eps*alpha*h.dot(h):
@@ -91,18 +91,21 @@ def minimize(f, x0, step_method, eps=eps, output=0):
         alpha = choose_step(f, x, h, step_method)
         print("x{0} = {1}\nα{0} = {2}\nf(x{0}) = {3}".format(i, x, alpha, f(x))) if i <= output else None
         x1 = x + alpha * h
+    print("{0} iterations".format(i+1))
     return x1
 
 
-x0 = np.array([0., 0.])
+x0 = np.array([2., -2./5, 2., -2./5])
+# x0 = np.array([100., 100.,100., 100.])
+# x0 = np.array([0.,0.,0.,0.])
 output = 3
 print("* * *   Градієнтний метод   * * *\n")
 print("Метод дроблення кроку")
 min = minimize(func, x0, "fragmentation", eps, output)
 print("Розв'язок: ", min,"\nmin f = ",func(min))
-print("Метод найшвидшого спуску з використанням методу золотого перетину одновимірної оптимізації")
-min = minimize(func, x0, "fastest_golden_ratio", eps, output)
-print("Розв'язок: ", min,"\nmin f = ",func(min))
-print("Метод найшвидшого спуску з використанням методу перебору одновимірної оптимізації")
-min = minimize(func, x0, "fastest_brute_force", eps, output)
-print("Розв'язок: ", min,"\nmin f = ",func(min))
+# print("Метод найшвидшого спуску з використанням методу золотого перетину одновимірної оптимізації")
+# min = minimize(func, x0, "fastest_golden_ratio", eps, output)
+# print("Розв'язок: ", min,"\nmin f = ",func(min))
+# print("Метод найшвидшого спуску з використанням методу перебору одновимірної оптимізації")
+# min = minimize(func, x0, "fastest_brute_force", eps, output)
+# print("Розв'язок: ", min,"\nmin f = ",func(min))
